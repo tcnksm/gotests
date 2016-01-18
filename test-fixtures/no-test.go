@@ -1,4 +1,4 @@
-package fixture
+package notest
 
 func DoSomething() error {
 	return nil
