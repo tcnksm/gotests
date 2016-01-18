@@ -3,7 +3,7 @@ default: test
 updatedeps:
 	go get -v -u ./...
 
-build: deps
+build: 
 	go build -o bin/goatg
 
 test: 
