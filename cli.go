@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -103,14 +104,25 @@ func (cli *CLI) Run(args []string) int {
 		return ExitCodeError
 	}
 
-	if diff {
-		data, err := doDiff(goTestFile.Src, res)
-		if err != nil {
-			fmt.Fprintf(cli.errStream, "Failed to compute diff: %s\n", err)
-			return ExitCodeError
+	if !bytes.Equal(goTestFile.Src, res) {
+
+		if diff {
+			data, err := doDiff(goTestFile.Src, res)
+			if err != nil {
+				fmt.Fprintf(cli.errStream, "Failed to compute diff: %s\n", err)
+				return ExitCodeError
+			}
+			fmt.Fprintf(cli.outStream, "diff %s\n", goTestFile.FileName)
+			fmt.Fprintf(cli.outStream, "%s\n", data)
 		}
-		fmt.Fprintf(cli.outStream, "diff %s\n", goTestFile.FileName)
-		fmt.Fprintf(cli.outStream, "%s\n", data)
+
+		if write {
+			err = ioutil.WriteFile(testFile, res, 0644)
+			if err != nil {
+				fmt.Fprintf(cli.errStream, "Failed to write resutl to file: %s\n", err)
+				return ExitCodeError
+			}
+		}
 	}
 
 	return ExitCodeOK

@@ -70,7 +70,3 @@ func ParseFile(path string) (*GoFile, error) {
 
 	return Parse(fi.Name(), f)
 }
-
-func isGoFile(fi os.FileInfo) bool {
-	return !fi.IsDir() && !strings.HasPrefix(fi.Name(), ".") && strings.HasSuffix(fi.Name(), ".go")
-}
