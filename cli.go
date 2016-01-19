@@ -72,16 +72,30 @@ func (cli *CLI) Run(args []string) int {
 	}
 	Debugf("%#v", goFile)
 
-	testFile, err := TestFile(file)
+	testFile, err := TestFilePath(file)
 	if err != nil {
 		fmt.Fprintf(cli.errStream, "Failed to get go test file: %s\n", err)
 		return ExitCodeError
 	}
 
-	goTestFile, err := ParseFile(testFile)
-	if err != nil {
-		fmt.Fprintf(cli.errStream, "Failed to parse go test file: %s\n", err)
-		return ExitCodeError
+	var goTestFile *GoFile
+	if _, err := os.Stat(testFile); os.IsNotExist(err) {
+		// If test file is not exist, create new one with the same pacakge
+		// declare with the source.
+		var err error
+		goTestFile, err = NewGoFile(testFile, goFile.PackageName)
+		if err != nil {
+			fmt.Fprintf(cli.errStream, "Failed to create new test file: %s\n", err)
+			return ExitCodeError
+		}
+	} else {
+		// If test file is exist, just parse it.
+		var err error
+		goTestFile, err = ParseFile(testFile)
+		if err != nil {
+			fmt.Fprintf(cli.errStream, "Failed to parse go test file: %s\n", err)
+			return ExitCodeError
+		}
 	}
 	Debugf("%#v", goTestFile)
 

@@ -24,6 +24,21 @@ type GoFile struct {
 	AstFile *ast.File
 }
 
+func NewGoFile(filename, pkgName string) (*GoFile, error) {
+	code := fmt.Sprintf("package %s", pkgName)
+	rd := bytes.NewReader([]byte(code))
+
+	goFile, err := Parse(filename, rd)
+	if err != nil {
+		return nil, err
+	}
+
+	// Src should be emtpy (it's used for diff)
+	goFile.Src = []byte{}
+
+	return goFile, nil
+}
+
 // Mode is diff mode to change function diff behavior
 type Mode int
 
@@ -113,8 +128,8 @@ func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *DiffOpts) ([]string, e
 	return diff, nil
 }
 
-// TestFile returns go test file of given source file.
-func TestFile(path string) (string, error) {
+// TestFilePath returns go test file of given source file.
+func TestFilePath(path string) (string, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return "", nil
