@@ -13,32 +13,6 @@ import (
 	"golang.org/x/tools/imports"
 )
 
-// GoFile is .go source file
-type GoFile struct {
-	PackageName string
-	FileName    string
-	Src         []byte
-	Funcs       []string
-
-	FSet    *token.FileSet
-	AstFile *ast.File
-}
-
-func NewGoFile(filename, pkgName string) (*GoFile, error) {
-	code := fmt.Sprintf("package %s", pkgName)
-	rd := bytes.NewReader([]byte(code))
-
-	goFile, err := Parse(filename, rd)
-	if err != nil {
-		return nil, err
-	}
-
-	// Src should be emtpy (it's used for diff)
-	goFile.Src = []byte{}
-
-	return goFile, nil
-}
-
 // Mode is diff mode to change function diff behavior
 type Mode int
 
@@ -55,6 +29,32 @@ var defaultExpectTestFuncTmpl = "Test{{ title .Name }}"
 
 var funcMap = template.FuncMap{
 	"title": strings.Title,
+}
+
+// GoFile is .go source file
+type GoFile struct {
+	PackageName string
+	FileName    string
+	Src         []byte
+	Funcs       []string
+
+	FSet    *token.FileSet
+	AstFile *ast.File
+}
+
+func NewGoFile(filename, pkgName string) (*GoFile, error) {
+	code := fmt.Sprintf("package %s", pkgName)
+	rd := bytes.NewReader([]byte(code))
+
+	goFile, err := parse(filename, rd)
+	if err != nil {
+		return nil, err
+	}
+
+	// Src should be emtpy (it's used for diff)
+	goFile.Src = []byte{}
+
+	return goFile, nil
 }
 
 func (o *diffOpts) init() {

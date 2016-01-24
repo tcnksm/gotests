@@ -36,6 +36,7 @@ func (cli *CLI) Run(args []string) int {
 	var (
 		diff    bool
 		write   bool
+		list    bool
 		doc     bool
 		version bool
 	)
@@ -52,6 +53,9 @@ func (cli *CLI) Run(args []string) int {
 
 	flags.BoolVar(&write, "write", false, "")
 	flags.BoolVar(&write, "w", false, "(Short)")
+
+	flags.BoolVar(&list, "list", false, "")
+	flags.BoolVar(&list, "l", false, "(Short)")
 
 	flags.BoolVar(&version, "version", false, "Print version information and quit.")
 	flags.BoolVar(&version, "v", false, "Print version information and quit.")
@@ -92,6 +96,7 @@ func (cli *CLI) Run(args []string) int {
 		},
 		diff:  diff,
 		write: write,
+		list:  list,
 	}
 
 	// By default, statusCode is ExitCodeOK and Run() returns it.
@@ -164,6 +169,7 @@ type generateOpts struct {
 
 	diff  bool
 	write bool
+	list  bool
 }
 
 func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
@@ -190,6 +196,16 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 	// Handle diff/write only when there is diff between result and original code.
 	if !bytes.Equal(goTestFile.Src, resBytes) {
 
+		if opts.list {
+
+			path, err := fmtPath(goTestFile.FileName)
+			if err != nil {
+				fmt.Fprintf(cli.errStream, "Failed to format path: %s\n", err)
+				return ExitCodeError
+			}
+			fmt.Fprintf(cli.outStream, "%s\n", path)
+		}
+
 		if opts.diff {
 			data, err := doDiff(goTestFile.Src, resBytes)
 			if err != nil {
@@ -209,7 +225,7 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 		}
 	}
 
-	if !opts.diff && !opts.write {
+	if !opts.list && !opts.diff && !opts.write {
 		_, err := cli.outStream.Write(resBytes)
 		if err != nil {
 			fmt.Fprintf(cli.errStream, "Failed to write resutl: %s\n", err)
@@ -255,6 +271,20 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 	goTestFile.AddTestFuncs(diffFuncs)
 
 	return goTestFile, nil
+}
+
+func fmtPath(path string) (string, error) {
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+
+	currentPath, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Rel(currentPath, path)
 }
 
 func doDiff(b1, b2 []byte) ([]byte, error) {
@@ -354,5 +384,7 @@ Options:
   -write, -w   Write result to target file instead of stdout.
                For example, if source file name is 'main.go',
                target file will be 'main_test.go'.
+
+  -list, -l    List test files to be updated/generated.
 
 `
