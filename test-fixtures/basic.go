@@ -1,13 +1,17 @@
 package basic
 
-func DoSomething() error {
+func init() {
+	// should be ignored
+}
+
+func ExportedA() error {
 	return nil
 }
 
-type User struct {
-	Name, Password string
+func ExportedB() error {
+	return nil
 }
 
-func (u *User) Validate() error {
+func Unexported() error {
 	return nil
 }

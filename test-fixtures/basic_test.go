@@ -2,4 +2,4 @@ package basic
 
 import "testing"
 
-func TestDoSomething(t *testing.T) {}
+func TestExportedA(t *testing.T) {}
