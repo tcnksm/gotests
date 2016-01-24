@@ -7,9 +7,11 @@ import (
 	"os"
 )
 
+const EnvDebugAst = "DEBUG_AST"
+
 // DebugAst runs ast.Print only when debug mode is enabled.
 func DebugAst(fset *token.FileSet, x interface{}) {
-	if os.Getenv(EnvDebug) != "" {
+	if os.Getenv(EnvDebugAst) != "" {
 		log.Println("[DEBUG] Ast")
 		ast.Print(fset, x)
 	}

@@ -8,13 +8,21 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
+	"text/template"
 )
+
+//go:generate ./bin/go-test-generate -godoc
 
 // Exit codes are int values that represent an exit code for a particular error.
 const (
 	ExitCodeOK    int = 0
 	ExitCodeError int = 1 + iota
 )
+
+// defaultExcludes are default directory where walkFunc does not walk
+var defaultExcludes = []string{".git", "Godep", "vendor"}
 
 // CLI is the command line object
 type CLI struct {
@@ -28,6 +36,7 @@ func (cli *CLI) Run(args []string) int {
 	var (
 		diff    bool
 		write   bool
+		doc     bool
 		version bool
 	)
 
@@ -47,6 +56,9 @@ func (cli *CLI) Run(args []string) int {
 	flags.BoolVar(&version, "version", false, "Print version information and quit.")
 	flags.BoolVar(&version, "v", false, "Print version information and quit.")
 
+	// This flag is only for developer to generate godoc via go generate.
+	flags.BoolVar(&doc, "godoc", false, "")
+
 	// Parse commandline flag
 	if err := flags.Parse(args[1:]); err != nil {
 		return ExitCodeError
@@ -58,70 +70,128 @@ func (cli *CLI) Run(args []string) int {
 		return ExitCodeOK
 	}
 
-	files := flags.Args()
-	if len(files) == 0 {
-		fmt.Fprintf(cli.errStream, "TODO: os.Stdin?\n")
-		return ExitCodeError
-	}
-
-	file := files[0]
-	goFile, err := ParseFile(file)
-	if err != nil {
-		fmt.Fprintf(cli.errStream, "Failed to parse go file: %s\n", err)
-		return ExitCodeError
-	}
-	Debugf("%#v", goFile)
-
-	testFile, err := TestFilePath(file)
-	if err != nil {
-		fmt.Fprintf(cli.errStream, "Failed to get go test file: %s\n", err)
-		return ExitCodeError
-	}
-
-	var goTestFile *GoFile
-	if _, err := os.Stat(testFile); os.IsNotExist(err) {
-		// If test file is not exist, create new one with the same pacakge
-		// declare with the source.
-		var err error
-		goTestFile, err = NewGoFile(testFile, goFile.PackageName)
-		if err != nil {
-			fmt.Fprintf(cli.errStream, "Failed to create new test file: %s\n", err)
+	// Generate godoc (only for developer)
+	if doc {
+		if err := godoc("doc.go"); err != nil {
+			fmt.Fprintf(cli.errStream, "Failed to generate godoc: %s", err)
 			return ExitCodeError
 		}
-	} else {
-		// If test file is exist, just parse it.
-		var err error
-		goTestFile, err = ParseFile(testFile)
-		if err != nil {
-			fmt.Fprintf(cli.errStream, "Failed to parse go test file: %s\n", err)
-			return ExitCodeError
+		return ExitCodeOK
+	}
+
+	paths := flags.Args()
+	if len(paths) == 0 {
+		fmt.Fprintf(cli.errStream, "Invalid arguments. You must provide PATHs\n")
+		return ExitCodeError
+	}
+
+	// opts are option struct for processGenerate()
+	opts := &generateOpts{
+		diffOpts: &diffOpts{
+			Mode: Strict,
+		},
+		diff:  diff,
+		write: write,
+	}
+
+	// By default, statusCode is ExitCodeOK and Run() returns it.
+	// It is updated only when processGogenerate returns non-ExitCodeOK.
+	exitCode := ExitCodeOK
+
+	for _, path := range paths {
+		switch fi, err := os.Stat(path); {
+		case err != nil:
+			// Output the error and proceeds next (but Change status code).
+			fmt.Fprintf(cli.errStream, "Failed to get file info: %s", err)
+			exitCode = ExitCodeError
+
+		case fi.IsDir():
+			// walkFn is function for filepath.Walk. It walks through .go files
+			// (but non _test.go) and executes processGenerate() to each file.
+			// If error happens while processing, it display it to errStream
+			// and continues processing. This is same as gofmt does.
+			//
+			// It updates exitCode only when processGenerates returns not non-zero code.
+			walkFn := func(srcPath string, fi os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+
+				// Ignore if it's directory
+				if fi.IsDir() {
+					return nil
+				}
+
+				// Ignore .git and vendoring directory.
+				for _, exclude := range defaultExcludes {
+					if strings.Contains(srcPath, exclude) {
+						return nil
+					}
+				}
+
+				// Ignore non .go file and _test.go file.
+				if !isGoFile(fi) {
+					return nil
+				}
+
+				Debugf("Walk to %q", srcPath)
+				status := cli.processGenerate(srcPath, opts)
+				if status != ExitCodeOK {
+					exitCode = status
+				}
+
+				return nil
+			}
+
+			// Start walking.
+			if err := filepath.Walk(path, walkFn); err != nil {
+				fmt.Fprintf(cli.errStream, "Failed to walk: %s\n", err)
+				exitCode = ExitCodeError
+			}
+		default:
+			status := cli.processGenerate(path, opts)
+			if status != ExitCodeOK {
+				exitCode = status
+			}
 		}
 	}
-	Debugf("%#v", goTestFile)
 
-	opts := &DiffOpts{
-		Mode: Strict,
-	}
+	return exitCode
+}
 
-	diffFuncs, err := goFile.DiffFuncs(goTestFile, opts)
+type generateOpts struct {
+	diffOpts *diffOpts
+
+	diff  bool
+	write bool
+}
+
+func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
+	testPath, err := TestFilePath(srcPath)
 	if err != nil {
-		fmt.Fprintf(cli.errStream, "Failed to diff source file and test file: %s\n", err)
-		return ExitCodeError
-	}
-	Debugf("%#v", diffFuncs)
-
-	goTestFile.AddTestFuncs(diffFuncs)
-
-	res, err := goTestFile.Generate()
-	if err != nil {
-		fmt.Fprintf(cli.errStream, "Failed to generate source: %s\n", err)
+		fmt.Errorf("Failed to get go test file path: %s\n", err)
 		return ExitCodeError
 	}
 
-	if !bytes.Equal(goTestFile.Src, res) {
+	// Run actual go-test-generate to path
+	goTestFile, err := goTestGenerate(srcPath, testPath, opts)
+	if err != nil {
+		fmt.Fprintf(cli.errStream, "Failed to generate: %s\n", err)
+		return ExitCodeError
+	}
 
-		if diff {
-			data, err := doDiff(goTestFile.Src, res)
+	// Genreate results as a []byte
+	resBytes, err := goTestFile.Generate()
+	if err != nil {
+		fmt.Fprintf(cli.errStream, "Failed to generate result from ast: %s\n", err)
+		return ExitCodeError
+	}
+
+	// Handle diff/write only when there is diff between result and original code.
+	if !bytes.Equal(goTestFile.Src, resBytes) {
+
+		if opts.diff {
+			data, err := doDiff(goTestFile.Src, resBytes)
 			if err != nil {
 				fmt.Fprintf(cli.errStream, "Failed to compute diff: %s\n", err)
 				return ExitCodeError
@@ -130,8 +200,8 @@ func (cli *CLI) Run(args []string) int {
 			fmt.Fprintf(cli.outStream, "%s\n", data)
 		}
 
-		if write {
-			err = ioutil.WriteFile(testFile, res, 0644)
+		if opts.write {
+			err = ioutil.WriteFile(testPath, resBytes, 0644)
 			if err != nil {
 				fmt.Fprintf(cli.errStream, "Failed to write resutl to file: %s\n", err)
 				return ExitCodeError
@@ -139,7 +209,52 @@ func (cli *CLI) Run(args []string) int {
 		}
 	}
 
+	if !opts.diff && !opts.write {
+		_, err := cli.outStream.Write(resBytes)
+		if err != nil {
+			fmt.Fprintf(cli.errStream, "Failed to write resutl: %s\n", err)
+			return ExitCodeError
+		}
+	}
+
 	return ExitCodeOK
+}
+
+func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, error) {
+	goFile, err := ParseFile(srcPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse go file: %s", err)
+	}
+	Debugf("%#v", goFile)
+
+	var goTestFile *GoFile
+	if _, err := os.Stat(testPath); os.IsNotExist(err) {
+		// If test file is not exist, create new one with the same pacakge
+		// declare with the source.
+		var err error
+		goTestFile, err = NewGoFile(testPath, goFile.PackageName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create new test file: %s", err)
+		}
+	} else {
+		// If test file is exist, just parse it.
+		var err error
+		goTestFile, err = ParseFile(testPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse go test file: %n", err)
+		}
+	}
+	Debugf("%#v", goTestFile)
+
+	diffFuncs, err := goFile.DiffFuncs(goTestFile, opts.diffOpts)
+	if err != nil {
+		fmt.Errorf("Failed to diff source file and test file: %s\n", err)
+	}
+	Debugf("%#v", diffFuncs)
+
+	goTestFile.AddTestFuncs(diffFuncs)
+
+	return goTestFile, nil
 }
 
 func doDiff(b1, b2 []byte) ([]byte, error) {
@@ -174,9 +289,63 @@ func doDiff(b1, b2 []byte) ([]byte, error) {
 	return data, err
 }
 
-var helpText = `Usage:
+// isGoFile returns true if file is go file and it's not test file.
+func isGoFile(fi os.FileInfo) bool {
+	if fi.IsDir() {
+		return false
+	}
 
-  %s [options] PATH ...
+	name := fi.Name()
+	if strings.HasPrefix(name, ".") {
+		return false
+	}
+
+	return strings.HasSuffix(name, ".go") && !strings.HasSuffix(name, "_test.go")
+}
+
+// godoc generates doc.go file for godoc to prevent from writing
+// the same documentation twice. If any, return error.
+func godoc(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	tmpl, err := template.New("godoc").Parse(godocTmpl)
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Content string
+	}{
+		Content: helpText,
+	}
+
+	if err := tmpl.Execute(f, data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var godocTmpl = `// DON"T EDIT THIS FILE
+// THIS IS GENERATED VIA GO GENERATE
+
+/*
+{{ .Content }}
+*/
+package main
+`
+
+var helpText = `go-test-generate is tool to generate Go test functions from
+the given source code.
+
+https://github.com/tcnksm/go-test-generate
+
+Usage:
+
+  go-test-generate [options] PATH ...
 
 Options:
 

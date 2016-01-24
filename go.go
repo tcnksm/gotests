@@ -46,7 +46,7 @@ const (
 	Strict Mode = iota
 )
 
-type DiffOpts struct {
+type diffOpts struct {
 	Mode               Mode
 	ExpectTestFuncTmpl string
 }
@@ -57,7 +57,7 @@ var funcMap = template.FuncMap{
 	"title": strings.Title,
 }
 
-func (o *DiffOpts) init() {
+func (o *diffOpts) init() {
 	if o.ExpectTestFuncTmpl == "" {
 		o.ExpectTestFuncTmpl = defaultExpectTestFuncTmpl
 	}
@@ -80,7 +80,7 @@ func (gf *GoFile) AddTestFuncs(funcs []string) {
 	}
 }
 
-func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *DiffOpts) ([]string, error) {
+func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *diffOpts) ([]string, error) {
 	opts.init()
 
 	var diff []string
