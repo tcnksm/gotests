@@ -4,7 +4,7 @@ updatedeps:
 	go get -v -u ./...
 
 build: 
-	go build -o bin/goatg
+	go build -o bin/go-test-generate
 
 test: 
 	go test -v -parallel 5
