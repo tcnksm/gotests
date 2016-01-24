@@ -28,3 +28,10 @@ cover:
 	go test -coverprofile=cover.out
 	go tool cover -html cover.out
 	rm cover.out
+
+generate: build
+	@go generate
+
+doc: generate	
+	@open http://127.0.0.1:9999/pkg/github.com/tcnksm/go-test-generate/
+	godoc -http=:9999
