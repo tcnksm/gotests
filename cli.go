@@ -269,11 +269,14 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 
 	diffFuncs, err := goFile.DiffFuncs(goTestFile, opts.diffOpts)
 	if err != nil {
-		fmt.Errorf("Failed to diff source file and test file: %s\n", err)
+		return nil, fmt.Errorf("failed to diff source file and test file: %s", err)
 	}
 	Debugf("%#v", diffFuncs)
 
-	goTestFile.AddTestFuncs(diffFuncs)
+	testFuncTmpl := defaultExpectTestFuncTmpl
+	if err := goTestFile.AddTestFuncs(diffFuncs, testFuncTmpl); err != nil {
+		return nil, fmt.Errorf("failed to add test funcs: %s", err)
+	}
 
 	return goTestFile, nil
 }

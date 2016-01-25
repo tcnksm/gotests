@@ -28,10 +28,14 @@ type diffOpts struct {
 	// for test generating target. By default it's false.
 	IncludeUnexported bool
 
-	ExpectTestFuncTmpl string
+	ExpectTestFuncTmpl       string
+	ExpectTestFuncMethodTmpl string
 }
 
-var defaultExpectTestFuncTmpl = "Test{{ title .Name }}"
+var (
+	defaultExpectTestFuncTmpl       = "Test{{ title .Name }}"
+	defaultExpectTestFuncMethodTmpl = "Test{{ title .TypeName }}_{{ title .Name }}"
+)
 
 var funcMap = template.FuncMap{
 	"title": strings.Title,
@@ -50,8 +54,8 @@ type GoFile struct {
 }
 
 type Method struct {
-	ReceiverName string
-	Name         string
+	TypeName string
+	Name     string
 }
 
 func NewGoFile(filename, pkgName string) (*GoFile, error) {
@@ -73,6 +77,10 @@ func (o *diffOpts) init() {
 	if o.ExpectTestFuncTmpl == "" {
 		o.ExpectTestFuncTmpl = defaultExpectTestFuncTmpl
 	}
+
+	if o.ExpectTestFuncMethodTmpl == "" {
+		o.ExpectTestFuncMethodTmpl = defaultExpectTestFuncMethodTmpl
+	}
 }
 
 func (gf *GoFile) Generate() ([]byte, error) {
@@ -84,12 +92,30 @@ func (gf *GoFile) Generate() ([]byte, error) {
 	return imports.Process(gf.FileName, buf.Bytes(), nil)
 }
 
-func (gf *GoFile) AddTestFuncs(funcs []string) {
+func (gf *GoFile) AddTestFuncs(funcs []string, testFuncTmpl string) error {
 	for _, fun := range funcs {
-		testFun := "Test" + strings.Title(fun)
-		testFunDecl := NewTestFuncDecl(testFun)
+
+		tmpl, err := template.New("testFunc").Funcs(funcMap).Parse(testFuncTmpl)
+		if err != nil {
+			return err
+		}
+
+		tmplData := struct {
+			Name string
+		}{
+			Name: fun,
+		}
+
+		var buf bytes.Buffer
+		if err := tmpl.Execute(&buf, tmplData); err != nil {
+			return err
+		}
+
+		testFunDecl := NewTestFuncDecl(buf.String())
 		gf.AstFile.Decls = append(gf.AstFile.Decls, testFunDecl)
 	}
+
+	return nil
 }
 
 func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *diffOpts) ([]string, error) {
