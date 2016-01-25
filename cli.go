@@ -13,7 +13,7 @@ import (
 	"text/template"
 )
 
-//go:generate ./bin/go-test-generate -godoc
+//go:generate ./bin/gotests -godoc
 
 // Exit codes are int values that represent an exit code for a particular error.
 const (
@@ -184,7 +184,7 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 		return ExitCodeError
 	}
 
-	// Run actual go-test-generate to path
+	// Run actual gotests to path
 	goTestFile, err := goTestGenerate(srcPath, testPath, opts)
 	if err != nil {
 		fmt.Fprintf(cli.errStream, "Failed to generate: %s\n", err)
@@ -373,14 +373,14 @@ var godocTmpl = `// DON"T EDIT THIS FILE
 package main
 `
 
-var helpText = `go-test-generate is tool to generate Go test functions from
+var helpText = `gotests is tool to generate Go test functions from
 the given source code.
 
-https://github.com/tcnksm/go-test-generate
+https://github.com/tcnksm/gotests
 
 Usage:
 
-  go-test-generate [options] PATH ...
+  gotests [options] PATH ...
 
 Options:
 

@@ -1,25 +1,25 @@
-# go-test-generate
+# gotests
 
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 [![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)][godocs]
 
 [license]: /LICENSE
-[godocs]: http://godoc.org/github.com/tcnksm/go-test-generate
+[godocs]: http://godoc.org/github.com/tcnksm/gotests
 
 
-`go-test-generate` generates Go test functions from the given source code.
+`gotests` generates Go test functions from the given source code.
 
 ## Install
 
 To install, use `go get`:
 
 ```bash
-$ go get -d github.com/tcnksm/go-test-generate
+$ go get -d github.com/tcnksm/gotests
 ```
 
 ## Contribution
 
-1. Fork ([https://github.com/tcnksm/go-test-generate/fork](https://github.com/tcnksm/go-test-generate/fork))
+1. Fork ([https://github.com/tcnksm/gotests/fork](https://github.com/tcnksm/gotests/fork))
 1. Create a feature branch
 1. Commit your changes
 1. Rebase your local changes against the master branch

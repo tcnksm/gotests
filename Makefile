@@ -4,7 +4,7 @@ updatedeps:
 	go get -v -u ./...
 
 build: 
-	go build -o bin/go-test-generate
+	go build -o bin/gotests
 
 test: 
 	go test -v -parallel 5
@@ -33,5 +33,5 @@ generate: build
 	@go generate
 
 doc: generate	
-	@open http://127.0.0.1:9999/pkg/github.com/tcnksm/go-test-generate/
+	@open http://127.0.0.1:9999/pkg/github.com/tcnksm/gotests/
 	godoc -http=:9999

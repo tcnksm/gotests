@@ -1,4 +1,4 @@
 package main
 
-const Name string = "go-test-generate"
+const Name string = "gotests"
 const Version string = "0.1.0"

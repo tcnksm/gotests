@@ -2,14 +2,14 @@
 // THIS IS GENERATED VIA GO GENERATE
 
 /*
-go-test-generate is tool to generate Go test functions from
+gotests is tool to generate Go test functions from
 the given source code.
 
-https://github.com/tcnksm/go-test-generate
+https://github.com/tcnksm/gotests
 
 Usage:
 
-  go-test-generate [options] PATH ...
+  gotests [options] PATH ...
 
 Options:
 
@@ -18,6 +18,10 @@ Options:
   -write, -w   Write result to target file instead of stdout.
                For example, if source file name is 'main.go',
                target file will be 'main_test.go'.
+
+  -list, -l    List test files to be updated/generated.
+
+  -i           Include unexport function for generating target.
 
 
 */
