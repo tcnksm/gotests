@@ -34,11 +34,12 @@ type CLI struct {
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	var (
-		diff    bool
-		write   bool
-		list    bool
-		doc     bool
-		version bool
+		diff              bool
+		write             bool
+		list              bool
+		doc               bool
+		includeUnexported bool
+		version           bool
 	)
 
 	// Define option flag parse
@@ -56,6 +57,9 @@ func (cli *CLI) Run(args []string) int {
 
 	flags.BoolVar(&list, "list", false, "")
 	flags.BoolVar(&list, "l", false, "(Short)")
+
+	flags.BoolVar(&includeUnexported, "include-unexported", false, "")
+	flags.BoolVar(&includeUnexported, "i", false, "")
 
 	flags.BoolVar(&version, "version", false, "Print version information and quit.")
 	flags.BoolVar(&version, "v", false, "Print version information and quit.")
@@ -92,7 +96,8 @@ func (cli *CLI) Run(args []string) int {
 	// opts are option struct for processGenerate()
 	opts := &generateOpts{
 		diffOpts: &diffOpts{
-			Mode: Strict,
+			Mode:              Strict,
+			IncludeUnexported: includeUnexported,
 		},
 		diff:  diff,
 		write: write,
@@ -194,7 +199,7 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 	}
 
 	// Handle diff/write only when there is diff between result and original code.
-	if !bytes.Equal(goTestFile.Src, resBytes) {
+	if !bytes.Equal(goTestFile.SrcBytes, resBytes) {
 
 		if opts.list {
 
@@ -207,7 +212,7 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 		}
 
 		if opts.diff {
-			data, err := doDiff(goTestFile.Src, resBytes)
+			data, err := doDiff(goTestFile.SrcBytes, resBytes)
 			if err != nil {
 				fmt.Fprintf(cli.errStream, "Failed to compute diff: %s\n", err)
 				return ExitCodeError
@@ -386,5 +391,7 @@ Options:
                target file will be 'main_test.go'.
 
   -list, -l    List test files to be updated/generated.
+
+  -i           Include unexport function for generating target.
 
 `

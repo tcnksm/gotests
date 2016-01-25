@@ -18,13 +18,13 @@ var defaultIgnoreFuncs = []string{"init"}
 func parse(filename string, rd io.Reader) (*GoFile, error) {
 
 	// Store src as []byte for doDiff
-	src, err := ioutil.ReadAll(rd)
+	srcBytes, err := ioutil.ReadAll(rd)
 	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("readall: %s", err)
 	}
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, filename, src, 0)
+	f, err := parser.ParseFile(fset, filename, srcBytes, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func parse(filename string, rd io.Reader) (*GoFile, error) {
 	return &GoFile{
 		PackageName: f.Name.Name,
 		FileName:    filename,
-		Src:         src,
+		SrcBytes:    srcBytes,
 		Funcs:       funcs,
 		FSet:        fset,
 		AstFile:     f,

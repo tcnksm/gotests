@@ -7,6 +7,7 @@ import (
 	"go/printer"
 	"go/token"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -21,7 +22,12 @@ const (
 )
 
 type diffOpts struct {
-	Mode               Mode
+	Mode Mode
+
+	// IncludeUnexported include unexported function
+	// for test generating target. By default it's false.
+	IncludeUnexported bool
+
 	ExpectTestFuncTmpl string
 }
 
@@ -35,11 +41,17 @@ var funcMap = template.FuncMap{
 type GoFile struct {
 	PackageName string
 	FileName    string
-	Src         []byte
+	SrcBytes    []byte
 	Funcs       []string
+	Methods     []Method
 
 	FSet    *token.FileSet
 	AstFile *ast.File
+}
+
+type Method struct {
+	ReceiverName string
+	Name         string
 }
 
 func NewGoFile(filename, pkgName string) (*GoFile, error) {
@@ -52,7 +64,7 @@ func NewGoFile(filename, pkgName string) (*GoFile, error) {
 	}
 
 	// Src should be emtpy (it's used for diff)
-	goFile.Src = []byte{}
+	goFile.SrcBytes = []byte{}
 
 	return goFile, nil
 }
@@ -85,6 +97,11 @@ func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *diffOpts) ([]string, e
 
 	var diff []string
 	for _, fun := range goFile.Funcs {
+
+		if !opts.IncludeUnexported && isUnExported(fun) {
+			continue
+		}
+
 		// exist indicate expected test function is exist on goTestFile
 		// function list.
 		exist := false
@@ -126,6 +143,14 @@ func (goFile *GoFile) DiffFuncs(goTestFile *GoFile, opts *diffOpts) ([]string, e
 	}
 
 	return diff, nil
+}
+
+var reLower = regexp.MustCompile("^[a-z]+")
+
+// isUnexported checks the given function is unxported (
+// Check name start with lower case).
+func isUnExported(name string) bool {
+	return reLower.Match([]byte(name))
 }
 
 // TestFilePath returns go test file of given source file.
