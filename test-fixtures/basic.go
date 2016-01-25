@@ -1,7 +1,6 @@
 package basic
 
 func init() {
-	// should be ignored
 }
 
 func ExportedA() error {
@@ -12,6 +11,6 @@ func ExportedB() error {
 	return nil
 }
 
-func Unexported() error {
+func unexported() error {
 	return nil
 }
