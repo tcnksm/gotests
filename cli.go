@@ -265,17 +265,28 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 			return nil, fmt.Errorf("failed to parse go test file: %n", err)
 		}
 	}
-	Debugf("%#v", goTestFile)
+	Debugf("goTestFile: %#v", goTestFile)
 
-	diffFuncs, err := goFile.DiffFuncs(goTestFile, opts.diffOpts)
+	diffFuncs, err := goFile.diffFuncs(goTestFile, opts.diffOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to diff source file and test file: %s", err)
 	}
-	Debugf("%#v", diffFuncs)
+	Debugf("Diff Funcs: %#v", diffFuncs)
 
 	testFuncTmpl := defaultExpectTestFuncTmpl
-	if err := goTestFile.AddTestFuncs(diffFuncs, testFuncTmpl); err != nil {
-		return nil, fmt.Errorf("failed to add test funcs: %s", err)
+	if err := goTestFile.addFuncTestFuncs(diffFuncs, testFuncTmpl); err != nil {
+		return nil, fmt.Errorf("failed to add func test funcs: %s", err)
+	}
+
+	diffMethods, err := goFile.diffMethods(goTestFile, opts.diffOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to diff source file and test file: %s", err)
+	}
+	Debugf("Diff Methods: %#v", diffMethods)
+
+	testFuncTmpl = defaultExpectTestFuncMethodTmpl
+	if err := goTestFile.addMethodTestFuncs(diffMethods, testFuncTmpl); err != nil {
+		return nil, fmt.Errorf("failed to add method test funcs: %s", err)
 	}
 
 	return goTestFile, nil

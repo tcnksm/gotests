@@ -12,9 +12,6 @@ import (
 	"strings"
 )
 
-// defaultIgnoreFuncs is default function name to be ignored in Parse
-var defaultIgnoreFuncs = []string{"init"}
-
 func parse(filename string, rd io.Reader) (*GoFile, error) {
 
 	// Store src as []byte for doDiff
@@ -30,28 +27,57 @@ func parse(filename string, rd io.Reader) (*GoFile, error) {
 	}
 	DebugAst(fset, f)
 
-	ignoreFuncs := defaultIgnoreFuncs
-
 	var funcs []string
+	var methods []*Method
 	ast.Inspect(f, func(node ast.Node) bool {
 		switch x := node.(type) {
 		case *ast.FuncDecl:
 			Debugf("FuncDecl: %#v", x.Name)
-			for _, f := range ignoreFuncs {
-				if f == x.Name.Name {
-					return true
-				}
+			// receiver (methods) or nil (functions)
+			if x.Recv == nil {
+				funcs = append(funcs, x.Name.Name)
+				return true
 			}
-			funcs = append(funcs, x.Name.Name)
+
+			fields := x.Recv.List
+			if len(fields) != 1 {
+				// Is this happend ..?
+				return true
+			}
+
+			field := fields[0]
+			t := field.Type
+			var recvName string
+			switch x2 := t.(type) {
+			case *ast.StarExpr:
+				switch x3 := x2.X.(type) {
+				case *ast.Ident:
+					recvName = x3.Name
+				}
+			case *ast.Ident:
+				recvName = x2.Name
+			default:
+				// Should not reach here...
+				return false
+			}
+
+			methods = append(methods, &Method{
+				RecvName: recvName,
+				Name:     x.Name.Name,
+			})
 		}
 		return true
 	})
+
+	Debugf("Funcs: %#v", methods)
+	Debugf("Methods: %#v", methods)
 
 	return &GoFile{
 		PackageName: f.Name.Name,
 		FileName:    filename,
 		SrcBytes:    srcBytes,
 		Funcs:       funcs,
+		Methods:     methods,
 		FSet:        fset,
 		AstFile:     f,
 	}, nil
