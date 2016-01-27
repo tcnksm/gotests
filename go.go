@@ -285,3 +285,16 @@ func TestFilePath(path string) (string, error) {
 
 	return strings.Replace(path, ".go", "_test.go", -1), nil
 }
+
+func SrcFilePath(path string) (string, error) {
+	path, err := filepath.Abs(path)
+	if err != nil {
+		return "", nil
+	}
+
+	if !strings.HasSuffix(path, "_test.go") {
+		return "", fmt.Errorf("%s is not go test file", path)
+	}
+
+	return strings.Replace(path, "_test.go", ".go", -1), nil
+}

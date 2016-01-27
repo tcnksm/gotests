@@ -37,9 +37,11 @@ func (cli *CLI) Run(args []string) int {
 		diff              bool
 		write             bool
 		list              bool
-		doc               bool
 		includeUnexported bool
+		reverse           bool
 		version           bool
+
+		doc bool
 	)
 
 	// Define option flag parse
@@ -57,6 +59,9 @@ func (cli *CLI) Run(args []string) int {
 
 	flags.BoolVar(&list, "list", false, "")
 	flags.BoolVar(&list, "l", false, "(Short)")
+
+	flags.BoolVar(&reverse, "reverse", false, "")
+	flags.BoolVar(&reverse, "r", false, "(Short)")
 
 	flags.BoolVar(&includeUnexported, "include-unexported", false, "")
 	flags.BoolVar(&includeUnexported, "i", false, "")
@@ -99,9 +104,10 @@ func (cli *CLI) Run(args []string) int {
 			Mode:              Strict,
 			IncludeUnexported: includeUnexported,
 		},
-		diff:  diff,
-		write: write,
-		list:  list,
+		diff:    diff,
+		write:   write,
+		list:    list,
+		reverse: reverse,
 	}
 
 	// By default, statusCode is ExitCodeOK and Run() returns it.
@@ -175,13 +181,27 @@ type generateOpts struct {
 	diff  bool
 	write bool
 	list  bool
+
+	reverse bool
 }
 
 func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
-	testPath, err := TestFilePath(srcPath)
-	if err != nil {
-		fmt.Errorf("Failed to get go test file path: %s\n", err)
-		return ExitCodeError
+	var testPath string
+	if opts.reverse {
+		var err error
+		testPath = srcPath
+		srcPath, err = SrcFilePath(testPath)
+		if err != nil {
+			fmt.Errorf("Failed to get src file path: %s\n", err)
+			return ExitCodeError
+		}
+	} else {
+		var err error
+		testPath, err = TestFilePath(srcPath)
+		if err != nil {
+			fmt.Errorf("Failed to get go test file path: %s\n", err)
+			return ExitCodeError
+		}
 	}
 
 	// Run actual gotests to path
@@ -407,5 +427,4 @@ Options:
   -list, -l    List test files to be updated/generated.
 
   -i           Include unexport function/method for generating target.
-
 `
