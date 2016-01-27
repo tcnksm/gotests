@@ -273,8 +273,8 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 	}
 	Debugf("Diff Funcs: %#v", diffFuncs)
 
-	testFuncTmpl := defaultExpectTestFuncTmpl
-	if err := goTestFile.addFuncTestFuncs(diffFuncs, testFuncTmpl); err != nil {
+	funcTmpl := defaultExpectTestFuncTmpl
+	if err := goTestFile.addFuncTestFuncs(diffFuncs, funcTmpl); err != nil {
 		return nil, fmt.Errorf("failed to add func test funcs: %s", err)
 	}
 
@@ -284,8 +284,8 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 	}
 	Debugf("Diff Methods: %#v", diffMethods)
 
-	testFuncTmpl = defaultExpectTestFuncMethodTmpl
-	if err := goTestFile.addMethodTestFuncs(diffMethods, testFuncTmpl); err != nil {
+	funcTmpl = defaultExpectTestFuncMethodTmpl
+	if err := goTestFile.addMethodTestFuncs(diffMethods, funcTmpl); err != nil {
 		return nil, fmt.Errorf("failed to add method test funcs: %s", err)
 	}
 
@@ -406,6 +406,6 @@ Options:
 
   -list, -l    List test files to be updated/generated.
 
-  -i           Include unexport function for generating target.
+  -i           Include unexport function/method for generating target.
 
 `
