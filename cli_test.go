@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestRun_versionFlag(t *testing.T) {
+func TestCLI_Run(t *testing.T) {
 	outStream, errStream := new(bytes.Buffer), new(bytes.Buffer)
 	cli := &CLI{outStream: outStream, errStream: errStream}
 	args := strings.Split("./gotests -version", " ")
