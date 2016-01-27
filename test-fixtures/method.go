@@ -4,9 +4,17 @@ type User struct {
 	Name, Password string
 }
 
-func (u *User) update() error {
+func NewUser(s string) *User {
+	return nil
 }
 
-func (u *User) Validate() error {
+func (u *User) initialize() error {
+}
+
+func (u User) Add() error {
+	return nil
+}
+
+func (u *User) Delete(name string) error {
 	return nil
 }
