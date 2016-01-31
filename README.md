@@ -18,7 +18,7 @@ I hope this tool would be a new friend of Gophers like `gofmt` or `gorename`.
 
 ![demo](https://googledrive.com/host/0Bx6MCSr67pIpZFdTdUJfR05KVU0/gotests.gif)
 
-`gotests.el` used by this demo is in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs plugin development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
+`gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs plugin development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
 
 A plugin PR for the other editor is welcome.
 
@@ -29,6 +29,37 @@ To install, use `go get`:
 ```bash
 $ go get -d github.com/tcnksm/gotests
 ```
+
+## Usage
+
+The usage:
+
+```bash
+gotests [options] PATH ...
+```
+
+Available options:
+
+```bash
+-diff, -d    Display diffs instead of rewriting files.
+
+-write, -w   Write result to target file instead of stdout. For example, if source file name is 'A.go',             
+             target file would be 'A_test.go'.
+
+-list, -l    List test files to be updated/generated.
+
+-i           Include unexport function/method for generating target.
+```
+
+## Rule
+
+The followings are the current basic rule of how to generate test functions, 
+
+- Test functions for `A.go` are added to `A_test.go`
+- Generating test function name of function is `Test{{ title .Name }}` 
+- Generating test function name of method is `Test{{ title .ReceiverTypeName }}_{{ title .Name }}`
+
+(In future, this rule will be configurable from command line option)
 
 ## Contribution
 

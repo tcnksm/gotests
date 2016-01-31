@@ -48,7 +48,7 @@ func (cli *CLI) Run(args []string) int {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 	flags.SetOutput(cli.errStream)
 	flags.Usage = func() {
-		fmt.Fprintf(cli.outStream, helpText, Name)
+		fmt.Fprintf(cli.outStream, helpText)
 	}
 
 	flags.BoolVar(&diff, "diff", false, "")
