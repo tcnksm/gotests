@@ -8,7 +8,13 @@
 
 `gotests` generates Go test functions from the given source code.
 
-Given `A.go` file, it analyzes test functions in `A_test.go` and adds functions which are not defined in that file. For example, if a function `DoSomething()` is defined in `A.go` but `TestDoSomething()` is not in `A_test.go`, it adds that function to `A_test.go`. By default, it only checks the exported functions (its name starts with upper case). Given a directory, it operates on all `*.go` files in that directory. By default, `gotests` prints the updated test sources to standard output. 
+Given `A.go` file, it analyzes test functions in `A_test.go` and adds functions which are not defined in that file. For example, if a function `DoSomething()` is defined in `A.go` but `TestDoSomething()` is not in `A_test.go`, it adds that function to `A_test.go`. By default, it only checks the exported functions (its name starts with upper case). Given a directory, it operates on all `*.go` files in that directory. By default, `gotests` prints the updated test sources to standard output.
+
+## Editor
+
+`gotests` works well with your editor like `gofmt`. The following demo shows
+
+![demo](https://googledrive.com/host/0Bx6MCSr67pIpZFdTdUJfR05KVU0/gotests.gif)
 
 ## Install
 
