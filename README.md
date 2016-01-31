@@ -14,9 +14,9 @@ I hope this tool would be a new friend of Gophers like `gofmt` or `gorename`.
 
 ## Editor
 
-`gotests` works well with your favorite editor like `gofmt` does. The following demo shows using `gotests` from Emacs. The left display shows the source codes and the right shows test source codes. It generates and adds test functions on the right codes,
+`gotests` works well with your favorite editor like `gofmt` does. The following demo shows using `gotests` from Emacs. The left display shows the source codes (`A.go`) and the right shows test source codes (`A_test.go`). It generates and adds test functions on the right codes,
 
-![demo](https://googledrive.com/host/0Bx6MCSr67pIpZFdTdUJfR05KVU0/gotests.gif)
+![demo](http://g.recordit.co/mAUKXDZ1DP.gif)
 
 `gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs plugin development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
 
