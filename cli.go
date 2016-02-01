@@ -408,7 +408,7 @@ package main
 `
 
 var helpText = `gotests is tool to generate Go test functions from
-the given source code like gofmt. 
+the given source code. 
 
 https://github.com/tcnksm/gotests
 

@@ -3,7 +3,7 @@
 
 /*
 gotests is tool to generate Go test functions from
-the given source code.
+the given source code. 
 
 https://github.com/tcnksm/gotests
 
@@ -21,8 +21,7 @@ Options:
 
   -list, -l    List test files to be updated/generated.
 
-  -i           Include unexport function for generating target.
-
+  -i           Include unexport function/method for generating target.
 
 */
 package main
