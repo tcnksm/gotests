@@ -10,13 +10,13 @@
 
 Given `A.go` file, it analyzes test functions in `A_test.go` and adds test functions which are not defined in that file. For example, if a function `DoSomething()` is defined in `A.go` but `TestDoSomething()` is not in `A_test.go`, then it adds that function to `A_test.go`. By default, it only checks the exported functions (its name starts with upper case). Given a directory, it operates on all `*.go` files in that directory. By default, `gotests` prints the updated test sources to standard output.
 
-## Editor
+## Editor integration
 
-`gotests` works well with your favorite editor like `gofmt` does. The following demo shows using `gotests` from Emacs. The left display shows the source codes (`A.go`) and the right shows test source codes (`A_test.go`). It generates and adds test functions on the right codes,
+`gotests` works well with your favorite editor capable of running an external tool like `gofmt` does. The following demo shows using `gotests` from [Emacs](http://www.gnu.org/software/emacs/). The left display shows the source codes (`A.go`) and the right shows test source codes (`A_test.go`). It generates and adds test functions on the right codes,
 
-![demo](/gotests.gif)
+![demo](/editor/emacs/gotests.gif)
 
-`gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs plugin development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
+`gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs package development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
 
 A plugin PR for the other editor is welcome.
 
