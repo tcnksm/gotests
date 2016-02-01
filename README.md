@@ -10,8 +10,6 @@
 
 Given `A.go` file, it analyzes test functions in `A_test.go` and adds test functions which are not defined in that file. For example, if a function `DoSomething()` is defined in `A.go` but `TestDoSomething()` is not in `A_test.go`, then it adds that function to `A_test.go`. By default, it only checks the exported functions (its name starts with upper case). Given a directory, it operates on all `*.go` files in that directory. By default, `gotests` prints the updated test sources to standard output.
 
-I hope this tool would be a new friend of Gophers like `gofmt` or `gorename`. 
-
 ## Editor
 
 `gotests` works well with your favorite editor like `gofmt` does. The following demo shows using `gotests` from Emacs. The left display shows the source codes (`A.go`) and the right shows test source codes (`A_test.go`). It generates and adds test functions on the right codes,
