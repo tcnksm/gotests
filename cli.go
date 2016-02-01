@@ -192,14 +192,14 @@ func (cli *CLI) processGenerate(srcPath string, opts *generateOpts) int {
 		testPath = srcPath
 		srcPath, err = SrcFilePath(testPath)
 		if err != nil {
-			fmt.Errorf("Failed to get src file path: %s\n", err)
+			fmt.Fprintf(cli.errStream, "Failed to get src file path: %s\n", err)
 			return ExitCodeError
 		}
 	} else {
 		var err error
 		testPath, err = TestFilePath(srcPath)
 		if err != nil {
-			fmt.Errorf("Failed to get go test file path: %s\n", err)
+			fmt.Fprintf(cli.errStream, "Failed to get go test file path: %s\n", err)
 			return ExitCodeError
 		}
 	}
@@ -282,7 +282,7 @@ func goTestGenerate(srcPath, testPath string, opts *generateOpts) (*GoFile, erro
 		var err error
 		goTestFile, err = ParseFile(testPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse go test file: %n", err)
+			return nil, fmt.Errorf("failed to parse go test file: %s", err)
 		}
 	}
 	Debugf("goTestFile: %#v", goTestFile)

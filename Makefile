@@ -16,11 +16,11 @@ test-all: vet lint test cover
 
 vet:
 	@go get golang.org/x/tools/cmd/vet
-	go tool vet .
+	@go tool vet *.go
 
 lint:
 	@go get github.com/golang/lint/golint
-	golint ./...
+	golint . | grep -v "comment"
 
 # cover shows test coverages
 cover:
