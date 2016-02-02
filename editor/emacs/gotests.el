@@ -15,7 +15,7 @@
       (erase-buffer))
 
     ;; Only run when buffer is test file
-    (if (string-match "_test.go" (buffer-file-name))
+    (if (string-match-p "_test\\.go\\'" (buffer-file-name))
         (progn
           (call-process "gotests" nil buf nil "-w" "-r" (buffer-file-name))
           (revert-buffer :ignore-auto :noconfirm)))))
