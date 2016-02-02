@@ -25,7 +25,7 @@ A plugin PR for the other editor is welcome.
 To install, use `go get`:
 
 ```bash
-$ go get -d github.com/tcnksm/gotests
+$ go get -u github.com/tcnksm/gotests
 ```
 
 ## Usage
