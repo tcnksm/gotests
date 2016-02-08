@@ -4,13 +4,20 @@ This is [Vim](http://www.vim.org/) plugin for `gotests`.
 
 ## Setup
 
+First, you need to get gotests:
+
+```sh
+go get -u github.com/tcnksm/gotests
+```
+
+In the next step you can choose manual installation or plugin manager. See below.
+
 ### Manual installation
 
 You can create the symlink using `symlinks.sh` like the following:
 
-```console
-$ go get -u github.com/tcnksm/gotests
-$ sh $GOPATH/src/github.com/tcnksm/gotests/editor/vim/misc/symlink.sh
+```sh
+sh $GOPATH/src/github.com/tcnksm/gotests/editor/vim/misc/symlink.sh
 ```
 
 ### Using plugin manager
