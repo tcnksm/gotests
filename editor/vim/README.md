@@ -2,37 +2,29 @@
 
 This is [Vim](http://www.vim.org/) plugin for `gotests`.
 
-## Setup
+## Install & Configuration
 
-First, you need to get gotests:
-
-```sh
-go get -u github.com/tcnksm/gotests
-```
-
-In the next step you can choose manual installation or plugin manager. See below.
-
-### Manual installation
-
-You can create the symlink using `symlinks.sh` like the following:
+To use this plugin, you need to install `gotests` binary itself first. To install, run `go get`:
 
 ```sh
-sh $GOPATH/src/github.com/tcnksm/gotests/editor/vim/misc/symlink.sh
+$ go get github.com/tcnksm/gotests
 ```
 
-### Using plugin manager
+To install, use well known plugin manager. You can add the following lines and execute the plugin's install:
 
-You can add the following line to your .vimrc:
+- [vim-plug](https://github.com/junegunn/vim-plug)
+    - `Plug 'tcnksm/gotests', { 'rtp': 'editor/vim' }`
+- [NeoBundle](https://github.com/Shougo/neobundle.vim)
+    - `NeoBundle 'tcnksm/gotests', { 'rtp': 'editor/vim' }`
+- [Vundle](https://github.com/gmarik/vundle)
+    - `Plugin 'tcnksm/gotests', { 'rtp': 'editor/vim' }` 
 
-```vim
-" vim-plug
-Plug 'tcnksm/gotests', { 'rtp': 'editor/vim' }
+If you don't use any plugin manager, run the following command and link to the plugin path,
 
-" Vundle
-Plugin 'tcnksm/gotests', { 'rtp': 'editor/vim' }
-
-" NeoBundle
-NeoBundle 'tcnksm/gotests', { 'rtp': 'editor/vim' }
+```sh
+$ sh $GOPATH/src/github.com/tcnksm/gotests/editor/vim/symlink.sh
 ```
 
-And then update your packages by running install command.
+## Author
+
+[@htm](https://github.com/hfm)
