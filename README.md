@@ -16,7 +16,10 @@ Given `A.go` file, it analyzes test functions in `A_test.go` and adds test funct
 
 ![demo](/editor/emacs/gotests.gif)
 
-`gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs package development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ).
+`gotests.el` used by this demo is available in [`editor/emacs`](/editor/emacs) directory (I'm not good at emacs package development. So this plugin should not well written. If you are good at emacs plugin please send PR 🙇 ). Now we have the following editor supports,
+
+- [emacs](/editor/emacs)
+- [vim](/editor/vim)
 
 A plugin PR for the other editor is welcome.
 
